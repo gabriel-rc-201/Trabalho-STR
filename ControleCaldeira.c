@@ -65,7 +65,7 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
 }
 
 void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_destino){// thread de controle da altura
-		struct timespec t;
+	struct timespec t;
 	long int periodo = 70000000; 	// 70ms
 	
 	// Le a hora atual, coloca em t
@@ -102,18 +102,9 @@ void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_d
 	printf("Terminou ControleAltura");
 }
 
-char teclado[1000];
-double valor;
-char msg_enviada[1000], msg_enviada_clone[1000];  
-char msg_recebida[1000];
-int nrec;
-
 int main(int argc, char* argv[]){
 
 	struct timespec t, t_inicio, t_fim;
-	int amostra = 0;		// Amostra corrente
-	long int periodo = 30000000; 	// 30ms
-
      if (argc < 3) { 
 		fprintf(stderr,"Uso: controlemanual <endereco> <porta>\n");
 		fprintf(stderr,"<endereco> eh o endereco IP da caldeira\n");
