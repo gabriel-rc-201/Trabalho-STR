@@ -101,7 +101,11 @@ void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_d
 	}
 	printf("Terminou ControleAltura");
 }
-
+ void printaTela(){
+	 /*
+	 	macho faz aki o ponto 4 q eu vou aproveitar q tu ta chamando pra fazer a armazenagem no buffer logo
+	 */
+ }
 int main(int argc, char* argv[]){
 
 	struct timespec t, t_inicio, t_fim;
