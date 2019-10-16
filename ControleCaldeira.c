@@ -3,7 +3,7 @@
 *	Implementa uma tarefa periodica usando clock_nanosleep em modo absoluto
 *	Compilar com:	gcc -lrt -o tarefaperiodica3 tarefaperiodica3.c
 *	ou
-*			gcc -o tarefaperiodica3 tarefaperiodica3.c -lrt
+*			gcc -o ControleCaldeira ControleCaldeira.c -lrt
 *
 *	Salva o atraso total ateh o *inicio* da execucao
 *	Isto inclui overheads, release jitter e possiveis interferencias
