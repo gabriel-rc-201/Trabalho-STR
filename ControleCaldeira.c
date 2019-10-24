@@ -123,25 +123,36 @@ void controleAltura(){// thread de controle da altura
 	}
 	printf("Terminou ControleAltura");
 }
- void printaTela(){
-	 /*
-	 	macho faz aki o ponto 4 q eu vou aproveitar q tu ta chamando pra fazer a armazenagem no buffer logo
-	 */
+  void printaTela(){//ponto 4
+	char *Ta, *T, *Ti, *No, *H;
+	
 	while (1){
-		printf("ALOHA\n");
+		Ta = ler("sta0",socket_local, endereco_destino);// Temperatura Ambiente
+		T = ler("st-0", socket_local, endereco_destino);// Temperatura da agua dentro do recipiente
+		Ti = ler("sti0", socket_local, endereco_destino);// Temperatura da agua que entra no cepiente
+		No = ler("sno0", socket_local, endereco_destino);// Fluxo de saida de agua
+		H = ler("sh-0", socket_local, endereco_destino);// altura da coluna de agua dentro do recipiente
+
+		printf("[Ta] Temperatura do ar  ambiente em volta do recipiente [Grau Celsius]: %s\n", Ta);
+		printf("[T]  Temperatura da água no interior do recipiente [Grau Celsius]: %s\n", T);
+		printf("[Ti] Temperatura da água que entra no recipiente [Grau Celsius]: %s\n", Ti);
+		printf("[No] Fluxo de água de saída do recipiente [Kg/segundo]: %s\n", No);
+		printf("[H]  Altura da coluna de água dentro do recipiente [m]: %s\n", H);
+		
 		sleep(1);
 	}
 	
  }
+
 int main(int argc, char* argv[]){
 
 	struct timespec t, t_inicio, t_fim;
      if (argc < 3) { 
-		fprintf(stderr,"Uso: controlemanual <endereco> <porta>\n");
+		fprintf(stderr,"Uso: ControleCaldeira <endereco> <porta>\n");
 		fprintf(stderr,"<endereco> eh o endereco IP da caldeira\n");
 		fprintf(stderr,"<porta> eh o numero da porta UDP da caldeira\n");
 		fprintf(stderr,"Exemplo de uso:\n");
-		fprintf(stderr,"   controlemanual localhost 12345\n");
+		fprintf(stderr,"   ControleCaldeira localhost 12345\n");
 		exit(1);
 	}
 
@@ -169,6 +180,5 @@ int main(int argc, char* argv[]){
 	pthread_join( tela, NULL);
 	pthread_join( bufferT, NULL);
 	pthread_join( buffer_h, NULL);
-
 }
 
