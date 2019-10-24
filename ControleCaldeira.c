@@ -133,11 +133,11 @@ void controleAltura(){// thread de controle da altura
 		No = ler("sno0", socket_local, endereco_destino);// Fluxo de saida de agua
 		H = ler("sh-0", socket_local, endereco_destino);// altura da coluna de agua dentro do recipiente
 
-		printf("[Ta] Temperatura do ar  ambiente em volta do recipiente [Grau Celsius]: %s\n", Ta);
-		printf("[T]  Temperatura da água no interior do recipiente [Grau Celsius]: %s\n", T);
-		printf("[Ti] Temperatura da água que entra no recipiente [Grau Celsius]: %s\n", Ti);
-		printf("[No] Fluxo de água de saída do recipiente [Kg/segundo]: %s\n", No);
-		printf("[H]  Altura da coluna de água dentro do recipiente [m]: %s\n", H);
+		printf("[Ta] Temperatura do ar  ambiente em volta do recipiente [Grau Celsius]: %s\n", &Ta[3]);
+		printf("[T]  Temperatura da água no interior do recipiente [Grau Celsius]: %s\n", &T[3]);
+		printf("[Ti] Temperatura da água que entra no recipiente [Grau Celsius]: %s\n", &Ti[3]);
+		printf("[No] Fluxo de água de saída do recipiente [Kg/segundo]: %s\n", &No[3]);
+		printf("[H]  Altura da coluna de água dentro do recipiente [m]: %s\n", &H[3]);
 		
 		sleep(1);
 	}
