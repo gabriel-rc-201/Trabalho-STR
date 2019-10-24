@@ -55,7 +55,7 @@ struct sockaddr_in cria_endereco_destino(char *destino, int porta_destino){
 }
 
 
-static void envia_mensagem(int socket_local, struct sockaddr_in endereco_destino, char *mensagem){
+void envia_mensagem(int socket_local, struct sockaddr_in endereco_destino, char *mensagem){
 	/* Envia msg ao servidor */
 
 	if (sendto(socket_local, mensagem, strlen(mensagem)+1, 0, (struct sockaddr *) &endereco_destino, sizeof(endereco_destino)) < 0 )
@@ -65,8 +65,7 @@ static void envia_mensagem(int socket_local, struct sockaddr_in endereco_destino
 	}
 }
 
-
-static int recebe_mensagem(int socket_local, char *buffer, int TAM_BUFFER){
+int recebe_mensagem(int socket_local, char *buffer, int TAM_BUFFER){
 	int bytes_recebidos;		/* Numero de bytes recebidos */
 
 	/* Espera pela msg de resposta do servidor */
