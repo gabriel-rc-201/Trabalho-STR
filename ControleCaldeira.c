@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include "socket.h"
+#include "bufduplo_t_resp.h"
+#include "bufduplo_sensores.h"
 
 #define	NSEC_PER_SEC    (1000000000) 	// Numero de nanosegundos em um milissegundo
 #define	N_AMOSTRAS	100		// Numero de amostras (medicoes) coletadas
@@ -29,7 +31,6 @@
 void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in endereco_destino){//thread de controle do tempo
 	struct timespec t, t_fim;
 	long atraso_fim[N_AMOSTRAS];
-	int amostra = 0;		// Amostra corrente
 	long int periodo = 50000000; 	// 50ms
 	
 	// Le a hora atual, coloca em t
@@ -61,11 +62,9 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
 		clock_gettime(CLOCK_MONOTONIC ,&t_fim);
 
 		// Calcula o tempo de resposta observado em microsegundos
-		atraso_fim[amostra++] = 1000000*(t_fim.tv_sec - t.tv_sec)   +   (t_fim.tv_nsec - t.tv_nsec)/1000;
-		// guardar isso direto no buffer usando o bufduplo_insereLeitura( atraso_fim)
-		// depois chama a bufduplo_esperaBufferCheio(void) para gravar logo o arquivo
-
-
+		bufduplo_insereLeitura_t(1000000*(t_fim.tv_sec - t.tv_sec)   +   (t_fim.tv_nsec - t.tv_nsec)/1000);
+		//implementar esse espera buff duplo como thread se nn da ruim kkkk
+		//bufduplo_esperaBufferCheio_t();
 		// Calcula inicio do proximo periodo
 		t.tv_nsec += periodo;
 		while (t.tv_nsec >= NSEC_PER_SEC) {
@@ -77,7 +76,8 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
 }
 
 void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_destino){// thread de controle da altura
-	struct timespec t;
+	struct timespec t, t_fim;
+	long atraso_fim[N_AMOSTRAS];
 	long int periodo = 70000000; 	// 70ms
 	
 	// Le a hora atual, coloca em t
@@ -104,6 +104,9 @@ void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_d
         }
 		printf("Passou um periodo de 70ms!\n");	
 
+
+		bufduplo_insereLeitura_h(1000000*(t_fim.tv_sec - t.tv_sec)   +   (t_fim.tv_nsec - t.tv_nsec)/1000);
+		bufduplo_esperaBufferCheio_h();
 		// Calcula inicio do proximo periodo
 		t.tv_nsec += periodo;
 		while (t.tv_nsec >= NSEC_PER_SEC) {
@@ -136,7 +139,7 @@ int main(int argc, char* argv[]){
 
 	struct sockaddr_in endereco_destino = cria_endereco_destino(argv[1], porta_destino);
 
-	controleTemp(25, socket_local, endereco_destino);
+	controleTemp(21, socket_local, endereco_destino);
 	controleAltura(2.5, socket_local, endereco_destino);
 
 }

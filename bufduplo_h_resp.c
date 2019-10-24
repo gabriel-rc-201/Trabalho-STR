@@ -18,7 +18,7 @@ static pthread_cond_t buffer_cheio = PTHREAD_COND_INITIALIZER;
 FILE* dados_arq;
 
 static void insere_dado_arq(int dado){ 
-    dados_arq = fopen("dados_temp.txt", "a");
+    dados_arq = fopen("dados_nivel.txt", "a");
     if(dados_arq == NULL){
         printf("Erro, nao foi possivel abrir o arquivo\n");
         exit(1);    
@@ -27,7 +27,7 @@ static void insere_dado_arq(int dado){
     fclose(dados_arq); 
        
 }
-void bufduplo_insereLeitura_t( double leitura) {
+void bufduplo_insereLeitura_h( double leitura) {
 	pthread_mutex_lock( &exclusao_mutua); 
 	if( emuso == 0) 
 		buffer_0[prox_insercao] = leitura; 
@@ -43,7 +43,7 @@ void bufduplo_insereLeitura_t( double leitura) {
 	pthread_mutex_unlock( &exclusao_mutua);
 }
 
-double *bufduplo_esperaBufferCheio_t(void) {
+void bufduplo_esperaBufferCheio_h(void) {
 	double *buffer; 
 	pthread_mutex_lock( &exclusao_mutua); 
 	while( gravar == -1) 
@@ -58,7 +58,6 @@ double *bufduplo_esperaBufferCheio_t(void) {
 	
 	for( int i=0; i<TAMBUF; ++i){
         insere_dado_arq(buffer[i]);
-    }
-	return buffer; 
+    } 
 }
 

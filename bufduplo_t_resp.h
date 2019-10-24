@@ -1,2 +1,3 @@
-void bufduplo_insereLeitura( double leitura);
-double *bufduplo_esperaBufferCheio(void);
+void bufduplo_insereLeitura_t( double leitura);
+double *bufduplo_esperaBufferCheio_t(void);
+static void insere_dado_arq(int dado);
