@@ -139,6 +139,8 @@ void controleAltura(){// thread de controle da altura
 		printf("[No] Fluxo de água de saída do recipiente [Kg/segundo]: %s\n", &No[3]);
 		printf("[H]  Altura da coluna de água dentro do recipiente [m]: %s\n", &H[3]);
 		
+		// ele printa a partir do 3 para pular o "sh-" 
+		//printando somente os valores 
 		sleep(1);
 	}
 	
