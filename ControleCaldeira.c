@@ -9,7 +9,7 @@
 *	Isto inclui overheads, release jitter e possiveis interferencias
 *	Salva tambem o tempo de resposta, entre chegada e conclusao	
 */
-
+#include <pthread.h>
 #include <unistd.h>
 #include <time.h>
 #include <sys/types.h>
@@ -23,14 +23,23 @@
 #include <netdb.h>
 #include "socket.h"
 #include "bufduplo_t_resp.h"
+#include "bufduplo_h_resp.h"
 #include "bufduplo_sensores.h"
 
 #define	NSEC_PER_SEC    (1000000000) 	// Numero de nanosegundos em um milissegundo
 #define	N_AMOSTRAS	100		// Numero de amostras (medicoes) coletadas
 
-void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in endereco_destino){//thread de controle do tempo
+int porta_destino;
+    
+int socket_local;
+
+struct sockaddr_in endereco_destino;
+
+float max_h;
+int temperatura_user;
+
+void controleTemp(){//thread de controle do tempo
 	struct timespec t, t_fim;
-	long atraso_fim[N_AMOSTRAS];
 	long int periodo = 50000000; 	// 50ms
 	
 	// Le a hora atual, coloca em t
@@ -42,7 +51,6 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
 	while(1) {
 		// Espera ateh inicio do proximo periodo
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-		// Le a hora atual, coloca em t_inicio
 
         char* msg_rec = ler("st-0", socket_local, endereco_destino);
         float temperatura_sist = atof(&msg_rec[3]);
@@ -57,14 +65,12 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
             altera("ani%lf", 10.0, endereco_destino, socket_local);
         }
 		
-		printf("Passou um periodo de 50ms!\n");	
+		//printf("Passou um periodo de 50ms!\n");	
 		// Le a hora atual, coloca em t_fim
 		clock_gettime(CLOCK_MONOTONIC ,&t_fim);
 
 		// Calcula o tempo de resposta observado em microsegundos
 		bufduplo_insereLeitura_t(1000000*(t_fim.tv_sec - t.tv_sec)   +   (t_fim.tv_nsec - t.tv_nsec)/1000);
-		//implementar esse espera buff duplo como thread se nn da ruim kkkk
-		//bufduplo_esperaBufferCheio_t();
 		// Calcula inicio do proximo periodo
 		t.tv_nsec += periodo;
 		while (t.tv_nsec >= NSEC_PER_SEC) {
@@ -75,9 +81,8 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
 	printf("Terminou ControleTemperatura");
 }
 
-void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_destino){// thread de controle da altura
+void controleAltura(){// thread de controle da altura
 	struct timespec t, t_fim;
-	long atraso_fim[N_AMOSTRAS];
 	long int periodo = 70000000; 	// 70ms
 	
 	// Le a hora atual, coloca em t
@@ -92,21 +97,23 @@ void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_d
 
         char* msg_rec = ler("sh-0", socket_local, endereco_destino);
         float haltura = atof(&msg_rec[3]);
-        
+        printf("\n%f\n", haltura);
 	    if(haltura >= max_h){
             altera("anf%lf", 100.0, endereco_destino, socket_local);
             altera("ani%lf", 0.0, endereco_destino, socket_local);
             altera("ana%lf", 0.0, endereco_destino, socket_local);    
         }
                 
-        if(haltura <= 1){
+        if(haltura <= 1.8){
             altera("anf%lf", 0, endereco_destino, socket_local);
         }
-		printf("Passou um periodo de 70ms!\n");	
-
+		//printf("Passou um periodo de 70ms!\n");	
+		
+		// Le a hora atual, coloca em t_fim
+		clock_gettime(CLOCK_MONOTONIC ,&t_fim);
 
 		bufduplo_insereLeitura_h(1000000*(t_fim.tv_sec - t.tv_sec)   +   (t_fim.tv_nsec - t.tv_nsec)/1000);
-		bufduplo_esperaBufferCheio_h();
+		
 		// Calcula inicio do proximo periodo
 		t.tv_nsec += periodo;
 		while (t.tv_nsec >= NSEC_PER_SEC) {
@@ -120,6 +127,11 @@ void controleAltura(float max_h, int socket_local, struct sockaddr_in endereco_d
 	 /*
 	 	macho faz aki o ponto 4 q eu vou aproveitar q tu ta chamando pra fazer a armazenagem no buffer logo
 	 */
+	while (1){
+		printf("ALOHA\n");
+		sleep(1);
+	}
+	
  }
 int main(int argc, char* argv[]){
 
@@ -133,14 +145,30 @@ int main(int argc, char* argv[]){
 		exit(1);
 	}
 
-    int porta_destino = atoi(argv[2]);
+    porta_destino = atoi(argv[2]);
     
-    int socket_local = cria_socket_local();
+    socket_local = cria_socket_local();
 
-	struct sockaddr_in endereco_destino = cria_endereco_destino(argv[1], porta_destino);
+	endereco_destino = cria_endereco_destino(argv[1], porta_destino);
 
-	controleTemp(21, socket_local, endereco_destino);
-	controleAltura(2.5, socket_local, endereco_destino);
+	pthread_t temp, nivel,tela, bufferT, buffer_h;
+	
+	printf("Digite o valor desejado da temperatura:\n");
+	scanf("%d", &temperatura_user);
+	printf("Digite o valor desejado do nivel maximo de agua:\n");
+	scanf("%f", &max_h);
+
+    pthread_create(&temp, NULL, (void *) controleTemp, NULL);
+    pthread_create(&nivel, NULL, (void *) controleAltura, NULL);
+	pthread_create(&tela, NULL, (void *) printaTela, NULL);
+	pthread_create(&bufferT, NULL, (void *) bufduplo_esperaBufferCheio_t, NULL);
+	pthread_create(&buffer_h, NULL, (void *) bufduplo_esperaBufferCheio_h, NULL);
+
+	pthread_join( temp, NULL);
+	pthread_join( nivel, NULL);
+	pthread_join( tela, NULL);
+	pthread_join( bufferT, NULL);
+	pthread_join( buffer_h, NULL);
 
 }
 

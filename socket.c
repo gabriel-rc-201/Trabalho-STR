@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include "socket.h"
+#include <pthread.h>
+
+pthread_mutex_t recebe = PTHREAD_MUTEX_INITIALIZER;
 
 char teclado[1000];
 double valor;
@@ -52,7 +55,7 @@ struct sockaddr_in cria_endereco_destino(char *destino, int porta_destino){
 }
 
 
-void envia_mensagem(int socket_local, struct sockaddr_in endereco_destino, char *mensagem){
+static void envia_mensagem(int socket_local, struct sockaddr_in endereco_destino, char *mensagem){
 	/* Envia msg ao servidor */
 
 	if (sendto(socket_local, mensagem, strlen(mensagem)+1, 0, (struct sockaddr *) &endereco_destino, sizeof(endereco_destino)) < 0 )
@@ -63,7 +66,7 @@ void envia_mensagem(int socket_local, struct sockaddr_in endereco_destino, char 
 }
 
 
-int recebe_mensagem(int socket_local, char *buffer, int TAM_BUFFER){
+static int recebe_mensagem(int socket_local, char *buffer, int TAM_BUFFER){
 	int bytes_recebidos;		/* Numero de bytes recebidos */
 
 	/* Espera pela msg de resposta do servidor */
@@ -78,22 +81,26 @@ int recebe_mensagem(int socket_local, char *buffer, int TAM_BUFFER){
 
 
 char* ler(char* consulta, int socket_local, struct sockaddr_in endereco_destino){//ler as variaveis do simulador
-    strcpy( msg_enviada, consulta);        
+    pthread_mutex_lock(&recebe);
+	strcpy( msg_enviada, consulta);        
 		
     envia_mensagem(socket_local, endereco_destino, msg_enviada);
 
 	nrec = recebe_mensagem(socket_local, msg_recebida, 1000);
 	msg_recebida[nrec] = '\0';
-
+	pthread_mutex_unlock(&recebe);
     return msg_recebida;
+
 }
     
 
 void altera(char* consulta, float valor, struct sockaddr_in endereco_destino, int socket_local){//altera os valores das variaveis no simulador
-    sprintf( msg_enviada, consulta, valor);        
+    pthread_mutex_lock(&recebe);
+	sprintf( msg_enviada, consulta, valor);        
 		
     envia_mensagem(socket_local, endereco_destino, msg_enviada);
 
     nrec = recebe_mensagem(socket_local, msg_recebida, 1000);
+	pthread_mutex_unlock(&recebe);
 	msg_recebida[nrec] = '\0';
 }
