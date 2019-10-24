@@ -24,9 +24,12 @@
 #include "socket.h"
 
 #define	NSEC_PER_SEC    (1000000000) 	// Numero de nanosegundos em um milissegundo
+#define	N_AMOSTRAS	100		// Numero de amostras (medicoes) coletadas
 
 void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in endereco_destino){//thread de controle do tempo
-	struct timespec t;
+	struct timespec t, t_fim;
+	long atraso_fim[N_AMOSTRAS];
+	int amostra = 0;		// Amostra corrente
 	long int periodo = 50000000; 	// 50ms
 	
 	// Le a hora atual, coloca em t
@@ -38,6 +41,7 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
 	while(1) {
 		// Espera ateh inicio do proximo periodo
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+		// Le a hora atual, coloca em t_inicio
 
         char* msg_rec = ler("st-0", socket_local, endereco_destino);
         float temperatura_sist = atof(&msg_rec[3]);
@@ -53,6 +57,14 @@ void controleTemp(int temperatura_user, int socket_local, struct sockaddr_in end
         }
 		
 		printf("Passou um periodo de 50ms!\n");	
+		// Le a hora atual, coloca em t_fim
+		clock_gettime(CLOCK_MONOTONIC ,&t_fim);
+
+		// Calcula o tempo de resposta observado em microsegundos
+		atraso_fim[amostra++] = 1000000*(t_fim.tv_sec - t.tv_sec)   +   (t_fim.tv_nsec - t.tv_nsec)/1000;
+		// guardar isso direto no buffer usando o bufduplo_insereLeitura( atraso_fim)
+		// depois chama a bufduplo_esperaBufferCheio(void) para gravar logo o arquivo
+
 
 		// Calcula inicio do proximo periodo
 		t.tv_nsec += periodo;

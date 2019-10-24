@@ -43,6 +43,8 @@ double *bufduplo_esperaBufferCheio(void) {
 		buffer = buffer_1; 
 	gravar = -1; 
 	pthread_mutex_unlock( &exclusao_mutua); 
+	//alterar para ao inves de retornar no buffer ja gravar no arquivos
+	// como começar sempre do fim do arquivo?
 	return buffer; 
 }
 
