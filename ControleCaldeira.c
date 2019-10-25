@@ -94,10 +94,8 @@ void controleAltura(){// thread de controle da altura
 	while(1) {
 		// Espera ateh inicio do proximo periodo
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-
         char* msg_rec = ler("sh-0", socket_local, endereco_destino);
         float haltura = atof(&msg_rec[3]);
-        printf("\n%f\n", haltura);
 	    if(haltura >= max_h){
             altera("anf%lf", 100.0, endereco_destino, socket_local);
             altera("ani%lf", 0.0, endereco_destino, socket_local);
@@ -125,23 +123,34 @@ void controleAltura(){// thread de controle da altura
 }
   void printaTela(){//ponto 4
 	char *Ta, *T, *Ti, *No, *H;
+	float ta, t, ti, no, h;
 	
 	while (1){
 		Ta = ler("sta0",socket_local, endereco_destino);// Temperatura Ambiente
+		ta = atof(&Ta[3]);
+		printf("[Ta] Temperatura do ar  ambiente em volta do recipiente [Grau Celsius]: %f\n",ta );
+		bufduplo_insereLeitura_s(ta);
 		T = ler("st-0", socket_local, endereco_destino);// Temperatura da agua dentro do recipiente
-		Ti = ler("sti0", socket_local, endereco_destino);// Temperatura da agua que entra no cepiente
+		t = atof(&T[3]);
+		printf("[T]  Temperatura da água no interior do recipiente [Grau Celsius]: %f\n", t);
+		bufduplo_insereLeitura_s(t);
+		Ti = ler("sti0", socket_local, endereco_destino);// Temperatura da agua que entra no
+		ti = atof(&Ti[3]);
+		printf("[Ti] Temperatura da água que entra no recipiente [Grau Celsius]: %f\n", ti); 
+		bufduplo_insereLeitura_s(ti);
 		No = ler("sno0", socket_local, endereco_destino);// Fluxo de saida de agua
+		no = atof(&No[3]);
+		printf("[No] Fluxo de água de saída do recipiente [Kg/segundo]: %f\n", no );
+		bufduplo_insereLeitura_s(no);
 		H = ler("sh-0", socket_local, endereco_destino);// altura da coluna de agua dentro do recipiente
-
-		printf("[Ta] Temperatura do ar  ambiente em volta do recipiente [Grau Celsius]: %s\n", &Ta[3]);
-		printf("[T]  Temperatura da água no interior do recipiente [Grau Celsius]: %s\n", &T[3]);
-		printf("[Ti] Temperatura da água que entra no recipiente [Grau Celsius]: %s\n", &Ti[3]);
-		printf("[No] Fluxo de água de saída do recipiente [Kg/segundo]: %s\n", &No[3]);
-		printf("[H]  Altura da coluna de água dentro do recipiente [m]: %s\n", &H[3]);
+		h =  atof(&H[3]);
+		printf("[H]  Altura da coluna de água dentro do recipiente [m]: %f\n",h);
+		bufduplo_insereLeitura_s(h);
 		
 		// ele printa a partir do 3 para pular o "sh-" 
 		//printando somente os valores 
 		sleep(1);
+		system("clear");
 	}
 	
  }
@@ -164,7 +173,7 @@ int main(int argc, char* argv[]){
 
 	endereco_destino = cria_endereco_destino(argv[1], porta_destino);
 
-	pthread_t temp, nivel,tela, bufferT, buffer_h;
+	pthread_t temp, nivel,tela, bufferT, buffer_h, buffer_s;
 	
 	printf("Digite o valor desejado da temperatura:\n");
 	scanf("%d", &temperatura_user);
@@ -176,11 +185,13 @@ int main(int argc, char* argv[]){
 	pthread_create(&tela, NULL, (void *) printaTela, NULL);
 	pthread_create(&bufferT, NULL, (void *) bufduplo_esperaBufferCheio_t, NULL);
 	pthread_create(&buffer_h, NULL, (void *) bufduplo_esperaBufferCheio_h, NULL);
+	pthread_create(&buffer_s, NULL, (void *) bufduplo_esperaBufferCheio_s, NULL);
 
 	pthread_join( temp, NULL);
 	pthread_join( nivel, NULL);
 	pthread_join( tela, NULL);
 	pthread_join( bufferT, NULL);
 	pthread_join( buffer_h, NULL);
+	pthread_join( buffer_s, NULL);
 }
 

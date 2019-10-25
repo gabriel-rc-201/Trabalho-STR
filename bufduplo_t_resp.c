@@ -5,7 +5,7 @@
 #include	<unistd.h>
 
 
-#define TAMBUF 100 
+#define TAMBUF 100
 static double buffer_0[TAMBUF]; 
 static double buffer_1[TAMBUF];
 
@@ -43,7 +43,7 @@ void bufduplo_insereLeitura_t( double leitura) {
 	pthread_mutex_unlock( &exclusao_mutua);
 }
 
-double *bufduplo_esperaBufferCheio_t(void) {
+void bufduplo_esperaBufferCheio_t(void) {
 	double *buffer; 
 	pthread_mutex_lock( &exclusao_mutua); 
 	while( gravar == -1) 
@@ -59,6 +59,10 @@ double *bufduplo_esperaBufferCheio_t(void) {
 	for( int i=0; i<TAMBUF; ++i){
         insere_dado_arq(buffer[i]);
     }
-	return buffer; 
+
+	pthread_t bufferT;
+	pthread_create(&bufferT, NULL, (void *) bufduplo_esperaBufferCheio_t, NULL);
+	pthread_join( bufferT, NULL);
+	
 }
 

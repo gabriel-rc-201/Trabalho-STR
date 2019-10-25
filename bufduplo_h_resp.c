@@ -5,7 +5,7 @@
 #include	<unistd.h>
 
 
-#define TAMBUF 100 
+#define TAMBUF 100
 static double buffer_0[TAMBUF]; 
 static double buffer_1[TAMBUF];
 
@@ -58,6 +58,13 @@ void bufduplo_esperaBufferCheio_h(void) {
 	
 	for( int i=0; i<TAMBUF; ++i){
         insere_dado_arq(buffer[i]);
-    } 
+    }
+	
+	pthread_t buffer_h;
+	pthread_create(&buffer_h, NULL, (void *) bufduplo_esperaBufferCheio_h, NULL);
+	pthread_join( buffer_h, NULL);
+
+	
+
 }
 

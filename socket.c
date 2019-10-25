@@ -14,7 +14,6 @@
 
 pthread_mutex_t recebe = PTHREAD_MUTEX_INITIALIZER;
 
-char teclado[1000];
 double valor;
 char msg_enviada[1000], msg_enviada_clone[1000];  
 char msg_recebida[1000];
