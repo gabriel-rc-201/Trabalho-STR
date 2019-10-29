@@ -53,7 +53,7 @@ void controleTemp(){//thread de controle do tempo
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
 
         char* msg_rec = ler("st-0", socket_local, endereco_destino);
-        float temperatura_sist = atof(&msg_rec[3]);
+        float temperatura_sist = atof(&msg_rec[3]), ni;
 
 	    if (temperatura_user > temperatura_sist){
             altera("ani%lf", 0.0, endereco_destino, socket_local);
@@ -61,8 +61,8 @@ void controleTemp(){//thread de controle do tempo
         }
             
         if(temperatura_user < temperatura_sist){           
-            altera("ana%lf", 0.0, endereco_destino, socket_local);
-            altera("ani%lf", 10.0, endereco_destino, socket_local);
+            altera("ana%lf", 10.0, endereco_destino, socket_local);
+            altera("ani%lf", 100, endereco_destino, socket_local);
         }
 		
 		//printf("Passou um periodo de 50ms!\n");	
@@ -79,6 +79,38 @@ void controleTemp(){//thread de controle do tempo
 		}
 	}
 	printf("Terminou ControleTemperatura");
+}
+
+void Alarme(){
+    struct timespec t, t_fim;
+	long int periodo = 10000000; 	// 10ms
+	
+	// Le a hora atual, coloca em t
+	clock_gettime(CLOCK_MONOTONIC ,&t);
+
+	// Tarefa periodica iniciará em 1 segundo
+	t.tv_sec++;
+    
+    while(1){
+        // Espera ateh inicio do proximo periodo
+		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
+		
+        char* msg_rec = ler("st-0", socket_local, endereco_destino);
+        float temperatura_sist = atof(&msg_rec[3]), ni;
+        
+        if (temperatura_sist > 30)
+            printf("\a\a\a\a");
+            
+        // Le a hora atual, coloca em t_fim
+		clock_gettime(CLOCK_MONOTONIC ,&t_fim);
+		
+		// Calcula inicio do proximo periodo
+		t.tv_nsec += periodo;
+		while (t.tv_nsec >= NSEC_PER_SEC) {
+			t.tv_nsec -= NSEC_PER_SEC;
+			t.tv_sec++;
+		}
+    } 
 }
 
 void controleAltura(){// thread de controle da altura
@@ -102,8 +134,9 @@ void controleAltura(){// thread de controle da altura
             altera("ana%lf", 0.0, endereco_destino, socket_local);    
         }
                 
-        if(haltura <= 1.8){
+        if(haltura <= max_h-0.2){
             altera("anf%lf", 0, endereco_destino, socket_local);
+			altera("ani%lf", 100.0, endereco_destino, socket_local);
         }
 		//printf("Passou um periodo de 70ms!\n");	
 		
@@ -124,7 +157,7 @@ void controleAltura(){// thread de controle da altura
   void printaTela(){//ponto 4
 	char *Ta, *T, *Ti, *No, *H;
 	float ta, t, ti, no, h;
-	
+
 	while (1){
 		Ta = ler("sta0",socket_local, endereco_destino);// Temperatura Ambiente
 		ta = atof(&Ta[3]);
@@ -149,10 +182,9 @@ void controleAltura(){// thread de controle da altura
 		
 		// ele printa a partir do 3 para pular o "sh-" 
 		//printando somente os valores 
-		sleep(1);
+		sleep(1);//pausa por 1s
 		system("clear");
 	}
-	
  }
 
 int main(int argc, char* argv[]){
@@ -173,7 +205,7 @@ int main(int argc, char* argv[]){
 
 	endereco_destino = cria_endereco_destino(argv[1], porta_destino);
 
-	pthread_t temp, nivel,tela, bufferT, buffer_h, buffer_s;
+	pthread_t temp, nivel,tela, bufferT, buffer_h, buffer_s, alarme;
 	
 	printf("Digite o valor desejado da temperatura:\n");
 	scanf("%d", &temperatura_user);
@@ -186,6 +218,8 @@ int main(int argc, char* argv[]){
 	pthread_create(&bufferT, NULL, (void *) bufduplo_esperaBufferCheio_t, NULL);
 	pthread_create(&buffer_h, NULL, (void *) bufduplo_esperaBufferCheio_h, NULL);
 	pthread_create(&buffer_s, NULL, (void *) bufduplo_esperaBufferCheio_s, NULL);
+	pthread_create(&alarme, NULL,(void *) Alarme, NULL);
+	
 
 	pthread_join( temp, NULL);
 	pthread_join( nivel, NULL);
@@ -193,5 +227,6 @@ int main(int argc, char* argv[]){
 	pthread_join( bufferT, NULL);
 	pthread_join( buffer_h, NULL);
 	pthread_join( buffer_s, NULL);
+	pthread_join( alarme, NULL);
 }
 
