@@ -82,7 +82,7 @@ void controleTemp(){//thread de controle do tempo
 }
 
 void Alarme(){
-    struct timespec t, t_fim;
+    struct timespec t;
 	long int periodo = 10000000; 	// 10ms
 	
 	// Le a hora atual, coloca em t
@@ -100,9 +100,6 @@ void Alarme(){
         
         if (temperatura_sist > 30)
             printf("\a\a\a\a");
-            
-        // Le a hora atual, coloca em t_fim
-		clock_gettime(CLOCK_MONOTONIC ,&t_fim);
 		
 		// Calcula inicio do proximo periodo
 		t.tv_nsec += periodo;
@@ -154,7 +151,7 @@ void controleAltura(){// thread de controle da altura
 	}
 	printf("Terminou ControleAltura");
 }
-  void printaTela(){//ponto 4
+void printaTela(){//ponto 4
 	char *Ta, *T, *Ti, *No, *H;
 	float ta, t, ti, no, h;
 
